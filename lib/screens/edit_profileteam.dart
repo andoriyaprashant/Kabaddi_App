@@ -235,6 +235,13 @@ class _EditTeamProfileFormState extends State<EditTeamProfileForm> {
               .collection('Teams')
               .doc(user.uid)
               .set(userData);
+          var profile = await FirebaseFirestore.instance
+              .collection("Teams")
+              .where("uid", isEqualTo: user.uid)
+              .get();
+          if (profile.docs.isNotEmpty) {
+            userProfile.value = profile.docs.first.data();
+          }
           showDialog(
             context: context,
             builder: (context) {
@@ -252,13 +259,6 @@ class _EditTeamProfileFormState extends State<EditTeamProfileForm> {
               );
             },
           );
-          var profile = await FirebaseFirestore.instance
-              .collection("Teams")
-              .where("uid", isEqualTo: user.uid)
-              .get();
-          if (profile.docs.isNotEmpty) {
-            userProfile.value = profile.docs.first.data();
-          }
         } catch (e) {
           Get.snackbar("Error", e.toString());
         } finally {

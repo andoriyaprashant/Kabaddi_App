@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kabadi/screens/player_details.dart';
 
-
-
 class KabadiLeaguePage extends StatefulWidget {
   const KabadiLeaguePage({super.key});
 
@@ -63,12 +61,17 @@ class _KabadiLeaguePageState extends State<KabadiLeaguePage> {
       appBar: AppBar(
         title: const Text(
           "  KABADI PLAYERS",
-          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.black,
         elevation: 0,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz,color: Colors.grey,))
+          IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.more_horiz,
+                color: Colors.grey,
+              ))
         ],
       ),
       body: SingleChildScrollView(
@@ -286,10 +289,10 @@ class _KabadiLeaguePageState extends State<KabadiLeaguePage> {
       padding: const EdgeInsets.all(8),
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PlayerDetails()),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const PlayerDetails()),
+          // );
         },
         child: Row(
           children: [

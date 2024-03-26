@@ -9,6 +9,7 @@ import 'package:kabadi/screens/edit_profileteam.dart';
 import 'package:kabadi/screens/image_card.dart';
 import 'package:kabadi/screens/navigationbar.dart';
 import 'package:kabadi/screens/team_details.dart';
+import 'package:kabadi/screens/teams.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -103,6 +104,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 // Handle edit profile action
               } else if (value == 'logout') {
                 // Handle logout action
+                userProfile.value = {};
                 await FirebaseAuth.instance
                     .signOut(); // Call the logout confirmation dialog
               }
@@ -189,7 +191,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 title: const Text('Know Your Team'),
                 onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => TeamDetails()),
+                      MaterialPageRoute(builder: (context) => Teams()),
                     )),
             const ListTile(
               leading: Icon(Icons.live_tv),

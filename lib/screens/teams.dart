@@ -33,6 +33,24 @@ class _TeamsState extends State<Teams> {
     // Add more teams here as needed
   ];
 
+  Rx<List<Map<String, String>>> teamList = Rx<List<Map<String, String>>>([]);
+  Rx<bool> isLoading = false.obs;
+
+  getTeams() {
+    isLoading.value = true;
+    teamStream = FirebaseFirestore.instance.collection("Teams").snapshots();
+  }
+
+  Stream? teamStream;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getTeams();
+    isLoading.value = false;
+  }
+
   int? selectedIndex; // Track the index of the selected team
   bool _isSearching = false;
 
@@ -52,7 +70,7 @@ class _TeamsState extends State<Teams> {
                 style: TextStyle(color: Colors.black),
               )
             : const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
                     "Kabadi",
@@ -68,7 +86,7 @@ class _TeamsState extends State<Teams> {
                   Text(
                     "Teams",
                     style: TextStyle(
-                      fontSize: 25.0,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
@@ -76,26 +94,26 @@ class _TeamsState extends State<Teams> {
                 ],
               ),
         actions: [
-          IconButton(
-            color: Colors.black,
-            icon: const Icon(
-              Icons.search,
-              color: const Color(0xFF6f758b),
-            ),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching; // Toggle search state
-              });
-            },
-          ),
-          IconButton(
-            color: Colors.black,
-            icon: const Icon(
-              Icons.notifications,
-              color: const Color(0xFF6f758b),
-            ),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   color: Colors.black,
+          //   icon: const Icon(
+          //     Icons.search,
+          //     color: const Color(0xFF6f758b),
+          //   ),
+          //   onPressed: () {
+          //     setState(() {
+          //       _isSearching = !_isSearching; // Toggle search state
+          //     });
+          //   },
+          // ),
+          // IconButton(
+          //   color: Colors.black,
+          //   icon: const Icon(
+          //     Icons.notifications,
+          //     color: const Color(0xFF6f758b),
+          //   ),
+          //   onPressed: () {},
+          // ),
           const SizedBox(
             width: 10,
           ),
@@ -128,6 +146,7 @@ class _TeamsState extends State<Teams> {
                 // Handle edit profile action
               } else if (value == 'logout') {
                 // Handle logout action
+                userProfile.value = {};
                 await FirebaseAuth.instance
                     .signOut(); // Call the logout confirmation dialog
               }
@@ -145,37 +164,68 @@ class _TeamsState extends State<Teams> {
           )
         ],
       ),
-      body: Container(
-        color: const Color(0xFFf7f2f0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: teams.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final team = teams[index];
-                  return TeamButton(
-                    name: team['name'],
-                    image: team['image'],
-                    isSelected: selectedIndex ==
-                        index, // Set isSelected based on selectedIndex
-                    onTap: () {
-                      setState(() {
-                        // Update selectedIndex when a team is tapped
-                        selectedIndex = index;
-                      });
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => TeamDetails()),
+      body: Obx(() {
+        return isLoading.value
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : StreamBuilder(
+                stream: teamStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data.docs.length > 0) {
+                      return Container(
+                        color: const Color(0xFFf7f2f0),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: snapshot.data.docs.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final QueryDocumentSnapshot team =
+                                      snapshot.data.docs[index];
+                                  return TeamButton(
+                                    name: team['name'],
+                                    image: team['logo'],
+                                    isSelected: selectedIndex ==
+                                        index, // Set isSelected based on selectedIndex
+                                    onTap: () {
+                                      setState(() {
+                                        // Update selectedIndex when a team is tapped
+                                        selectedIndex = index;
+                                      });
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => TeamDetails(
+                                                  team: team,
+                                                )),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+                    } else {
+                      return Center(
+                        child: Text("No Teams yet"),
+                      );
+                    }
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    return Center(
+                      child: Text("Internal Error"),
+                    );
+                  }
+                });
+      }),
     );
   }
 }
@@ -210,7 +260,7 @@ class TeamButton extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 35),
-                child: Image.asset(
+                child: Image.network(
                   image,
                   height: 50,
                 ),

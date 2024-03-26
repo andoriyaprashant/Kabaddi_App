@@ -16,6 +16,7 @@ import 'package:kabadi/screens/landing_page.dart';
 import 'package:kabadi/screens/navigationbar.dart';
 import 'package:kabadi/screens/team_details.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kabadi/screens/teams.dart';
 
 class Trending extends StatefulWidget {
   const Trending({super.key});
@@ -129,6 +130,7 @@ class _TrendingState extends State<Trending>
                 // Handle edit profile action
               } else if (value == 'logout') {
                 // Handle logout action
+                userProfile.value = {};
                 _showLogoutConfirmationDialog(); // Call the logout confirmation dialog
               }
             },
@@ -190,7 +192,7 @@ class _TrendingState extends State<Trending>
                 title: const Text('Know Your Team'),
                 onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => TeamDetails()),
+                      MaterialPageRoute(builder: (context) => Teams()),
                     )),
             const ListTile(
               leading: Icon(Icons.live_tv),

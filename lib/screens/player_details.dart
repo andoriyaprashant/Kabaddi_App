@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:kabadi/constants.dart';
 import 'package:kabadi/screens/discussion.dart';
@@ -10,7 +10,8 @@ import 'package:kabadi/screens/edit_profileteam.dart';
 import 'package:kabadi/screens/upcoming_matches.dart';
 
 class PlayerDetails extends StatefulWidget {
-  const PlayerDetails({super.key});
+  final Map<String, dynamic> player;
+  const PlayerDetails({super.key, required this.player});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -44,44 +45,44 @@ class _PlayerDetailsState extends State<PlayerDetails>
               ),
             ),
             actions: [
-              IconButton(
-                color: Colors.black,
-                icon: const Icon(
-                  Icons.search,
-                  color: const Color(0xFF6f758b),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isSearching = !_isSearching; // Toggle search state
-                  });
-                },
-              ),
-              IconButton(
-                color: Colors.black,
-                icon: const Icon(
-                  Icons.notifications,
-                  color: const Color(0xFF6f758b),
-                ),
-                onPressed: () {},
-              ),
+              // IconButton(
+              //   color: Colors.black,
+              //   icon: const Icon(
+              //     Icons.search,
+              //     color: const Color(0xFF6f758b),
+              //   ),
+              //   onPressed: () {
+              //     setState(() {
+              //       _isSearching = !_isSearching; // Toggle search state
+              //     });
+              //   },
+              // ),
+              // IconButton(
+              //   color: Colors.black,
+              //   icon: const Icon(
+              //     Icons.notifications,
+              //     color: const Color(0xFF6f758b),
+              //   ),
+              //   onPressed: () {},
+              // ),
               const SizedBox(
                 width: 10,
               ),
               PopupMenuButton(
                 itemBuilder: (BuildContext context) => <PopupMenuEntry>[
                   PopupMenuItem(
-                    child: Text('Edit Profile'),
+                    child: const Text('Edit Profile'),
                     value: 'edit_profile',
                     onTap: () async {
                       // Retrieve current user
                       if (user != null) {
                         // Access user's document in Firestore
                         if (userRole.value == "user") {
-                          Get.to(() => EditUserProfilePage());
+                          Get.to(() => const EditUserProfilePage());
                         } else if (userRole.value == "player") {
-                          Get.to(() => EditPlayerProfilePage());
+                          Get.to(() => const EditPlayerProfilePage());
                         } else if (userRole.value == "team") {
-                          Get.to(() => EditTeamProfilePage());
+                          Get.to(() => const EditTeamProfilePage());
                         }
                       }
                     },
@@ -96,6 +97,7 @@ class _PlayerDetailsState extends State<PlayerDetails>
                     // Handle edit profile action
                   } else if (value == 'logout') {
                     // Handle logout action
+                    userProfile.value = {};
                     await FirebaseAuth.instance
                         .signOut(); // Call the logout confirmation dialog
                   }
@@ -145,7 +147,7 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                 style: TextStyle(
                                   fontSize: _width * 0.05,
                                   //   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF6f758b),
+                                  color: const Color(0xFF6f758b),
                                 ),
                               ),
                             ),
@@ -195,13 +197,15 @@ class _PlayerDetailsState extends State<PlayerDetails>
                             crossAxisAlignment: CrossAxisAlignment
                                 .start, // Align text to the start (left)
                             children: [
-                              const Text(
-                                'Atharva',
+                              Text(
+                                widget.player["name"],
                                 textAlign: TextAlign.left,
-                                style: TextStyle(
-                                  fontSize: 45,
+                                maxLines: 3,
+                                style: const TextStyle(
+                                  fontSize: 35,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               SizedBox(height: _height * 0.3),
@@ -215,10 +219,10 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                   SizedBox(
                                       width: _width *
                                           0.04), // Add some space between the avatar and text
-                                  const Text(
-                                    'DEFENDER',
+                                  Text(
+                                    widget.player["position"],
                                     textAlign: TextAlign.start,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.grey,
@@ -233,8 +237,8 @@ class _PlayerDetailsState extends State<PlayerDetails>
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(0),
-                            child: Image.asset(
-                              "images/adharva.png",
+                            child: Image.network(
+                              widget.player["imageUrl"],
                               width: _width * 0.3,
                               height: _height * 0.5,
                               fit: BoxFit.cover,
@@ -267,11 +271,11 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                 20,
                               ),
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Padding(
+                                const Padding(
                                   padding: EdgeInsets.only(right: 16, left: 35),
                                   child: Text(
                                     'Age',
@@ -283,11 +287,12 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(right: 30, left: 30),
+                                  padding: const EdgeInsets.only(
+                                      right: 30, left: 30),
                                   child: Text(
-                                    '30',
-                                    style: TextStyle(
-                                      fontSize: 40,
+                                    widget.player["age"].toString(),
+                                    style: const TextStyle(
+                                      fontSize: 30,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
                                     ),
@@ -319,14 +324,14 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                 20,
                               ),
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Padding(
+                                const Padding(
                                   padding: EdgeInsets.only(right: 16, left: 35),
                                   child: Text(
-                                    'Won',
+                                    'Points',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -335,11 +340,12 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(right: 30, left: 30),
+                                  padding: const EdgeInsets.only(
+                                      right: 30, left: 30),
                                   child: Text(
-                                    '12',
-                                    style: TextStyle(
-                                      fontSize: 40,
+                                    widget.player["points"].toString(),
+                                    style: const TextStyle(
+                                      fontSize: 30,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
                                     ),
@@ -371,11 +377,11 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                 20,
                               ),
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Padding(
+                                const Padding(
                                   padding: EdgeInsets.only(right: 6, left: 25),
                                   child: Text(
                                     'Matches Played',
@@ -387,11 +393,12 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(right: 30, left: 30),
+                                  padding: const EdgeInsets.only(
+                                      right: 30, left: 30),
                                   child: Text(
-                                    '15',
-                                    style: TextStyle(
-                                      fontSize: 40,
+                                    widget.player["matchesPlayed"].toString(),
+                                    style: const TextStyle(
+                                      fontSize: 30,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
                                     ),
@@ -602,8 +609,8 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                 padding: const EdgeInsets.only(top: 20),
                                 child: Row(
                                   children: [
-                                    Image.asset(
-                                      "images/adharva.png",
+                                    Image.network(
+                                      widget.player["imageUrl"],
                                       width: _width * 0.3,
                                     ),
                                     Expanded(
@@ -611,18 +618,19 @@ class _PlayerDetailsState extends State<PlayerDetails>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
-                                            "Adharva",
-                                            style: TextStyle(
+                                          Text(
+                                            widget.player["name"],
+                                            style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 20),
                                           ),
                                           SizedBox(
                                             height: _height * 0.02,
                                           ),
-                                          const Text(
-                                            "Atharva (born 16 June 1993) is an Indian Kabaddi player, who has played as a defender and later became a magnificent raider.He was the first player ever to score 500, 700 and 800 raid points in Pro Kabaddi League. He was a member of the Indian National Kabaddi team that won a gold medal in the 2016 South Asian Games. After six seasons with Telugu Titans and one season for Tamil Thalaivas, Rahul now plays for Jaipur Pink Panthers.",
-                                            style: TextStyle(
+                                          Text(
+                                            // "Atharva (born 16 June 1993) is an Indian Kabaddi player, who has played as a defender and later became a magnificent raider.He was the first player ever to score 500, 700 and 800 raid points in Pro Kabaddi League. He was a member of the Indian National Kabaddi team that won a gold medal in the 2016 South Asian Games. After six seasons with Telugu Titans and one season for Tamil Thalaivas, Rahul now plays for Jaipur Pink Panthers.",
+                                            widget.player["about"],
+                                            style: const TextStyle(
                                               fontSize: 16,
                                             ),
                                           )

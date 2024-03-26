@@ -114,6 +114,7 @@ class _PointsTablePageState extends State<PointsTablePage> {
                   // Handle edit profile action
                 } else if (value == 'logout') {
                   // Handle logout action
+                  userProfile.value = {};
                   await FirebaseAuth.instance
                       .signOut(); // Call the logout confirmation dialog
                 }
