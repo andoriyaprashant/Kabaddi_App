@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kabadi/constants.dart';
+import 'package:kabadi/screens/discussion.dart';
 import 'package:kabadi/screens/edit_profile.dart';
 import 'package:kabadi/screens/edit_profileplayer.dart';
 import 'package:kabadi/screens/edit_profileteam.dart';
@@ -347,6 +348,67 @@ class _ExplorePageState extends State<ExplorePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                  // articles from Firestore
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('articles').snapshots(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.data!.docs.isEmpty) {
+                    return SizedBox.shrink();
+                  }
+
+              return Column(
+                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                  return _buildArticleTile(
+                    title: data['title'],
+                    description: data['description'],
+                    imageUrl: data['imageUrl'],
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          SizedBox(height: 16),
+            _buildArticleTile(
+              title: "About matches",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%200?alt=media&token=e54f6584-6c42-4328-8732-33e381d17123",
+            ),
+            SizedBox(height: 16),
+            _buildArticleTile(
+              title: "Captain",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%203?alt=media&token=c448eba2-e921-492d-8b53-e5fe1f89d35c"
+            ),
+            SizedBox(height: 16),
+            _buildArticleTile(
+              title: "About Adharva",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%202?alt=media&token=0ad1d5a1-f7b4-4f78-8be6-82e86d55b19e"
+            ),
+             SizedBox(height: 16),
+            _buildArticleTile(
+              title: "Telugu Titans",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%201?alt=media&token=c498c223-169d-4802-b763-5c120c8e2ce3"
+            ),
+          
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -414,6 +476,76 @@ class _ExplorePageState extends State<ExplorePage> {
       ),
     );
   }
+
+Widget _buildArticleTile({
+  required String title,
+  required String description,
+  required String imageUrl,
+}) {
+  return Padding(
+    padding: const EdgeInsets.all(10.0),
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CommentBox()),
+        );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.0),
+                topRight: Radius.circular(12.0),
+              ),
+              child: Image.network(
+                imageUrl,
+                width: 610,
+                          height: 320,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 
   Future<void> _dialogBuilder(BuildContext context) {
     return showDialog(

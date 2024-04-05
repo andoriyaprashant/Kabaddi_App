@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kabadi/constants.dart';
+import 'package:kabadi/screens/discussion.dart';
 import 'package:kabadi/screens/edit_profile.dart';
 import 'package:kabadi/screens/edit_profileplayer.dart';
 import 'package:kabadi/screens/edit_profileteam.dart';
@@ -197,27 +198,11 @@ class _TrendingState extends State<Trending>
             const ListTile(
               leading: Icon(Icons.live_tv),
               title: Text('LiveScore'),
-              /*onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LiveScore()),
-                    )*/
             ),
             const ListTile(
               leading: Icon(Icons.sports_kabaddi_rounded),
               title: Text('Matches'),
-              /*onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) =>  PointsTablePage()),
-                    )*/
             ),
-            // ListTile(
-            //     leading: const Icon(Icons.settings),
-            //     title: const Text('Settings'),
-            //     onTap: () => Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //               builder: (context) => const EditUserProfilePage()),
-            //         )),
             ListTile(
               leading: const Icon(Icons.delete),
               title: const Text('Delete Account'),
@@ -226,13 +211,10 @@ class _TrendingState extends State<Trending>
           ],
         ),
       ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
               padding: const EdgeInsets.all(10.0),
               child: Container(
                 decoration: BoxDecoration(
@@ -363,62 +345,106 @@ class _TrendingState extends State<Trending>
               ),
             ),
             const SizedBox(height: 0.0),
-            TabBar(
-              controller: _tabController,
-              indicatorSize:
-                  TabBarIndicatorSize.tab, // or TabBarIndicatorSize.tab
-              tabs: [
-                Tab(
+          TabBar(
+            controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: [
+              Tab(
+                child: Text(
+                  'For you',
+                  style: TextStyle(
+                    color: _selectedIndex == 0 ? Colors.black : const Color(0xFFfc5607),
+                  ),
+                ),
+              ),
+              Tab(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    'For you',
+                    'Bookmarks',
                     style: TextStyle(
-                      // fontSize: 20,
-                      color: _selectedIndex == 0
-                          ? Colors.black
-                          : const Color(0xFFfc5607),
+                      color: _selectedIndex == 1 ? Colors.black : const Color(0xFFfc5607),
                     ),
                   ),
                 ),
-                Tab(
-                  child: Padding(
-                    padding: const EdgeInsets.all(
-                        8.0), // Adjust the padding as per your requirement
-                    child: Text(
-                      'Bookmarks',
-                      style: TextStyle(
-                        color: _selectedIndex == 1
-                            ? Colors.black
-                            : const Color(0xFFfc5607),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Scrollbar(
+        child: ListView(
+          children: [
+              // articles from Firestore
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('articles').snapshots(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.data!.docs.isEmpty) {
+                    return SizedBox.shrink();
+                  }
+
+              return Column(
+                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                  return _buildArticleTile(
+                    title: data['title'],
+                    description: data['description'],
+                    imageUrl: data['imageUrl'],
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          SizedBox(height: 16),
+            _buildArticleTile(
+              title: "About matches",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%200?alt=media&token=e54f6584-6c42-4328-8732-33e381d17123",
             ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // First tab content (For you)
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Scrollbar(
-                      child: ListView(
-                        children: const [
-                          Text(
-                            'For you Content',
-                            style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          // Add your For you content here
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Second tab content (Bookmarks)
-                  Padding(
+            SizedBox(height: 16),
+            _buildArticleTile(
+              title: "Captain",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%203?alt=media&token=c448eba2-e921-492d-8b53-e5fe1f89d35c"
+            ),
+            SizedBox(height: 16),
+            _buildArticleTile(
+              title: "About Adharva",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%202?alt=media&token=0ad1d5a1-f7b4-4f78-8be6-82e86d55b19e"
+            ),
+             SizedBox(height: 16),
+            _buildArticleTile(
+              title: "Telugu Titans",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%201?alt=media&token=c498c223-169d-4802-b763-5c120c8e2ce3"
+            ),
+          ],
+        ),
+      ),
+    ),
+     // Second tab content (Bookmarks)
+                Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Scrollbar(
                       child: GridView.count(
@@ -476,77 +502,143 @@ class _TrendingState extends State<Trending>
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+Widget _buildArticleTile({
+  required String title,
+  required String description,
+  required String imageUrl,
+}) {
+  return Padding(
+    padding: const EdgeInsets.all(10.0),
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CommentBox()),
+        );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.0),
+                topRight: Radius.circular(12.0),
+              ),
+              child: Image.network(
+                imageUrl,
+                width: 610,
+                          height: 320,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
   Future<void> _dialogBuilder(BuildContext context) {
     return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Image.asset(
-                  'images/delete.png',
-                  width: 150,
-                ),
-                const SizedBox(height: 16),
-                const Text('Once you Delete your account \n'
-                    'There is no getting it back\n'
-                    'Make sure you want to do this'),
-              ],
-            ),
-            actions: [
-              SizedBox(
-                height: 45,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge),
-                  child: const Text('Yes, Delete My Account'),
-                ),
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Image.asset(
+                'images/delete.png',
+                width: 150,
               ),
-              const SizedBox(
-                height: 10,
-                width: double.infinity,
-              ),
-              SizedBox(
-                height: 45,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge),
-                  child: const Text('No, Stop it'),
-                ),
-              )
+              const SizedBox(height: 16),
+              const Text('Once you Delete your account \n'
+                  'There is no getting it back\n'
+                  'Make sure you want to do this'),
             ],
-          );
-        });
+          ),
+          actions: [
+            SizedBox(
+              height: 45,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
+                child: const Text('Yes, Delete My Account'),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+              width: double.infinity,
+            ),
+            SizedBox(
+              height: 45,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
+                child: const Text('No, Stop it'),
+              ),
+            )
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
-      // Navigate to login screen or any other screen you want after logout
       Get.offAll(() => LandingPage());
     } catch (e) {
       print("Error signing out: $e");
-      // Show an error message or handle the error as needed
     }
   }
 
-  // Show the confirmation dialog for logout
   Future<void> _showLogoutConfirmationDialog() async {
     return showDialog(
       context: context,
