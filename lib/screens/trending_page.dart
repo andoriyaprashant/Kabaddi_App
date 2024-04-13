@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kabadi/constants.dart';
+import 'package:kabadi/screens/discussion.dart';
 import 'package:kabadi/screens/edit_profile.dart';
 import 'package:kabadi/screens/edit_profileplayer.dart';
 import 'package:kabadi/screens/edit_profileteam.dart';
@@ -197,27 +198,11 @@ class _TrendingState extends State<Trending>
             const ListTile(
               leading: Icon(Icons.live_tv),
               title: Text('LiveScore'),
-              /*onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LiveScore()),
-                    )*/
             ),
             const ListTile(
               leading: Icon(Icons.sports_kabaddi_rounded),
               title: Text('Matches'),
-              /*onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) =>  PointsTablePage()),
-                    )*/
             ),
-            // ListTile(
-            //     leading: const Icon(Icons.settings),
-            //     title: const Text('Settings'),
-            //     onTap: () => Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //               builder: (context) => const EditUserProfilePage()),
-            //         )),
             ListTile(
               leading: const Icon(Icons.delete),
               title: const Text('Delete Account'),
@@ -226,13 +211,10 @@ class _TrendingState extends State<Trending>
           ],
         ),
       ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
               padding: const EdgeInsets.all(10.0),
               child: Container(
                 decoration: BoxDecoration(
@@ -363,62 +345,108 @@ class _TrendingState extends State<Trending>
               ),
             ),
             const SizedBox(height: 0.0),
-            TabBar(
-              controller: _tabController,
-              indicatorSize:
-                  TabBarIndicatorSize.tab, // or TabBarIndicatorSize.tab
-              tabs: [
-                Tab(
+          TabBar(
+            controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: [
+              Tab(
+                child: Text(
+                  'For you',
+                  style: TextStyle(
+                    color: _selectedIndex == 0 ? Colors.black : const Color(0xFFfc5607),
+                  ),
+                ),
+              ),
+              Tab(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    'For you',
+                    'Bookmarks',
                     style: TextStyle(
-                      // fontSize: 20,
-                      color: _selectedIndex == 0
-                          ? Colors.black
-                          : const Color(0xFFfc5607),
+                      color: _selectedIndex == 1 ? Colors.black : const Color(0xFFfc5607),
                     ),
                   ),
                 ),
-                Tab(
-                  child: Padding(
-                    padding: const EdgeInsets.all(
-                        8.0), // Adjust the padding as per your requirement
-                    child: Text(
-                      'Bookmarks',
-                      style: TextStyle(
-                        color: _selectedIndex == 1
-                            ? Colors.black
-                            : const Color(0xFFfc5607),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Scrollbar(
+        child: ListView(
+          children: [
+         
+
+              // articles from Firestore
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('articles').snapshots(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.data!.docs.isEmpty) {
+                    return SizedBox.shrink();
+                  }
+
+              return Column(
+                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                  return _buildArticleTile(
+                    title: data['title'],
+                    description: data['description'],
+                    imageUrl: data['imageUrl'], articleId: 'article',
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          SizedBox(height: 16),
+            _buildArticleTile(
+              title: "About matches",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%200?alt=media&token=e54f6584-6c42-4328-8732-33e381d17123", articleId: 'Article 0',
             ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // First tab content (For you)
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Scrollbar(
-                      child: ListView(
-                        children: const [
-                          Text(
-                            'For you Content',
-                            style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          // Add your For you content here
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Second tab content (Bookmarks)
-                  Padding(
+            SizedBox(height: 16),
+            _buildArticleTile(
+              title: "Captain",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%203?alt=media&token=c448eba2-e921-492d-8b53-e5fe1f89d35c", articleId: '1'
+            ),
+            SizedBox(height: 16),
+            _buildArticleTile(
+              title: "About Adharva",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath.",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%202?alt=media&token=0ad1d5a1-f7b4-4f78-8be6-82e86d55b19e", articleId: '2'
+            ),
+             SizedBox(height: 16),
+            _buildArticleTile(
+              title: "Telugu Titans",
+              description:
+                  "Kabaddi is basically a combative sport, with seven players on each side; played for a period of 40 minutes with a 5 minutes break (20-5-20). The core idea of the game is to score points by raiding into the opponent's court and touching as many defense players as possible without getting caught on a single breath",
+              imageUrl:
+                  "https://firebasestorage.googleapis.com/v0/b/kabadi-de081.appspot.com/o/Articles%2FArticle%201?alt=media&token=c498c223-169d-4802-b763-5c120c8e2ce3", articleId: '3'
+            ),
+          ],
+        ),
+      ),
+    ),
+     // Second tab content (Bookmarks)
+                Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Scrollbar(
                       child: GridView.count(
@@ -476,77 +504,229 @@ class _TrendingState extends State<Trending>
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> _dialogBuilder(BuildContext context) {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Image.asset(
-                  'images/delete.png',
-                  width: 150,
+Widget _buildArticleTile({
+  required String title,
+  required String description,
+  required String imageUrl,
+  required String articleId,
+}) {
+  String comment = '';
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              description,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+      Image.network(
+        imageUrl,
+        width: 610,
+        height: 320,
+        fit: BoxFit.cover,
+      ),
+      Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('comments')
+                  .where('articleId', isEqualTo: articleId)
+                  .snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                }
+
+                // Display comments
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                    return Text(data['comment']);
+                  }).toList(),
+                );
+              },
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Add a Comment'),
+                          content: TextField(
+                            onChanged: (value) {
+                              comment = value;
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Type your comment here...',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                _submitComment(articleId, comment);
+                                Navigator.pop(context);
+                              },
+                              child: Text('Submit'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  icon: Icon(Icons.comment),
+                  label: Text('Add Comment'),
                 ),
-                const SizedBox(height: 16),
-                const Text('Once you Delete your account \n'
-                    'There is no getting it back\n'
-                    'Make sure you want to do this'),
+                SizedBox(width: 8),
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('likes')
+                      .where('articleId', isEqualTo: articleId)
+                      .snapshots(),
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+
+                    // Count likes
+                    int likesCount = snapshot.data!.docs.length;
+
+                    // Check if the current user has liked this article
+                    bool likedByCurrentUser = snapshot.data!.docs
+                        .any((like) => like['userId'] == FirebaseAuth.instance.currentUser?.uid);
+
+                    return ElevatedButton.icon(
+                      onPressed: () {
+                        // Check if the current user has already liked the article
+                        if (likedByCurrentUser) {
+                          // Remove the like
+                          _unlikeArticle(articleId);
+                        } else {
+                          // Like the article
+                          _likeArticle(articleId);
+                        }
+                      },
+                      icon: Icon(likedByCurrentUser ? Icons.favorite : Icons.favorite_border),
+                      label: Text(likedByCurrentUser ? 'Unlike ($likesCount)' : 'Like ($likesCount)'),
+                    );
+                  },
+                ),
               ],
             ),
-            actions: [
-              SizedBox(
-                height: 45,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge),
-                  child: const Text('Yes, Delete My Account'),
-                ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Image.asset(
+                'images/delete.png',
+                width: 150,
               ),
-              const SizedBox(
-                height: 10,
-                width: double.infinity,
-              ),
-              SizedBox(
-                height: 45,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge),
-                  child: const Text('No, Stop it'),
-                ),
-              )
+              const SizedBox(height: 16),
+              const Text('Once you Delete your account \n'
+                  'There is no getting it back\n'
+                  'Make sure you want to do this'),
             ],
-          );
-        });
+          ),
+          actions: [
+            SizedBox(
+              height: 45,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
+                child: const Text('Yes, Delete My Account'),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+              width: double.infinity,
+            ),
+            SizedBox(
+              height: 45,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge),
+                child: const Text('No, Stop it'),
+              ),
+            )
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
-      // Navigate to login screen or any other screen you want after logout
       Get.offAll(() => LandingPage());
     } catch (e) {
       print("Error signing out: $e");
-      // Show an error message or handle the error as needed
     }
   }
 
-  // Show the confirmation dialog for logout
   Future<void> _showLogoutConfirmationDialog() async {
     return showDialog(
       context: context,
@@ -572,6 +752,90 @@ class _TrendingState extends State<Trending>
       },
     );
   }
+
+void _submitComment(String articleId, String comment) async {
+  try {
+    await FirebaseFirestore.instance.collection('comments').add({
+      'articleId': articleId,
+      'comment': comment,
+      'userId': FirebaseAuth.instance.currentUser?.uid,
+      'timestamp': DateTime.now(),
+    });
+    // Optionally, update the UI to display the newly added comment
+  } catch (error) {
+    print('Error submitting comment: $error');
+  }
+}
+
+void _likeArticle(String articleId) async {
+  try {
+    // Get the current user's ID
+    String? userId = FirebaseAuth.instance.currentUser?.uid;
+    
+    // Check if the user is logged in
+    if (userId != null) {
+      // Add a like document to the "Likes" collection
+      await FirebaseFirestore.instance.collection('likes').add({
+        'articleId': articleId,
+        'userId': userId,
+        'timestamp': DateTime.now(),
+      });
+      // Optionally, update the UI to reflect the like action
+    } else {
+      print('User is not logged in.');
+    }
+  } catch (error) {
+    print('Error liking article: $error');
+  }
+}
+
+void _unlikeArticle(String articleId) async {
+  try {
+    // Get the current user's ID
+    String? userId = FirebaseAuth.instance.currentUser?.uid;
+    
+    // Check if the user is logged in
+    if (userId != null) {
+      // Query the "Likes" collection to find the like document
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('likes')
+          .where('articleId', isEqualTo: articleId)
+          .where('userId', isEqualTo: userId)
+          .get();
+      
+      // Check if the query returned any documents
+      if (querySnapshot.docs.isNotEmpty) {
+        // Delete the like document
+        await querySnapshot.docs.first.reference.delete();
+        // Optionally, update the UI to reflect the unlike action
+      } else {
+        print('User has not liked this article.');
+      }
+    } else {
+      print('User is not logged in.');
+    }
+  } catch (error) {
+    print('Error unliking article: $error');
+  }
+}
+
+
+
+Future<bool> _checkIfAlreadyLiked(String? userId, String articleId) async {
+  try {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Likes')
+        .where('userId', isEqualTo: userId)
+        .where('articleId', isEqualTo: articleId)
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  } catch (error) {
+    print('Error checking if already liked: $error');
+    return false;
+  }
+}
+
 
   void _handlePopupMenuSelection(String value) {
     if (value == 'logout') {
